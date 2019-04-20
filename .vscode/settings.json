@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/home/vaibhav/anaconda2/envs/tensorflow/bin/python",
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
+}
