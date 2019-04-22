@@ -106,6 +106,7 @@ venv.bak/
 # images
 images/noisy
 images/enhanced
+images/tc
 
 # logs
 *.log

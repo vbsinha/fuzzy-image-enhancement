@@ -6,11 +6,12 @@ import numpy as np
 
 from utils import rmse
 
-def addnoise(name: str, zero_mean_gaussian_noise_sd: int = 15, 
+
+def addnoise(name: str, zero_mean_gaussian_noise_sd: int = 5,
              percent_gaussian_impulse_noise: int = 5, impulse_noise_sd: int = 100):
     imagepath = os.path.join('images', 'original', name)
-    img = imageio.imread(imagepath)
-    inp_img = img.astype(float)
+    img = imageio.imread(imagepath).astype(float)
+    inp_img = np.array(img, dtype=float, copy=True)
     # print(img)
     assert img.shape == (256, 256)
     percent_noise = percent_gaussian_impulse_noise / 100
@@ -22,14 +23,16 @@ def addnoise(name: str, zero_mean_gaussian_noise_sd: int = 15,
             else:
                 img[i][j] += random.gauss(0, zero_mean_gaussian_noise_sd)
     oppath = os.path.join('images', 'noisy', '{}_{}_{}_{}.png'.format(name[:-4],
-                          zero_mean_gaussian_noise_sd, percent_gaussian_impulse_noise,
-                          impulse_noise_sd))
+                                                                      zero_mean_gaussian_noise_sd, percent_gaussian_impulse_noise,
+                                                                      impulse_noise_sd))
     img = np.clip(img, 0, 255)
     img = img.astype(np.uint8)
     # print(img)
     # print(inp_img)
     imageio.imwrite(oppath, img)
-    print('RMSE between generated noisy image and original image: {}'.format(rmse(inp_img, img)))
+    print('RMSE between generated noisy image and original image: {}'.format(
+        rmse(inp_img, img)))
 
-random.seed(18)
+
+# random.seed(18)
 addnoise('Cameraman.png')
