@@ -10,6 +10,8 @@ import os
 alpha = 100
 
 
+<<<<<<< HEAD
+=======
 # def filterA(img, k, mu, beta):
 #     """ Apply filter A on img given pre-computed mu and beta """
 #     l = len(img)
@@ -40,6 +42,7 @@ alpha = 100
 #     return result
 
 
+>>>>>>> 335c1dcbdeea7a18fc672003c1b136f2528a2d76
 def _filterA(img, i, j, k, mu, betaij):
     l = len(img)
     m = np.arange(k) - k//2

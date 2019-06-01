@@ -13,7 +13,11 @@ parser.add_argument('--image', type=str, required=True,
                          'Specify path only after image folder')
 parser.add_argument('--method', type=str,
                     choices=['Sharpen', 'Gauss', 'TVC', 'TVB', 'Bil'],
+<<<<<<< HEAD
+                    required=True, help='Choose the method to enhance')
+=======
                     default='Sharpen', help='Choose the method to enhance')
+>>>>>>> 335c1dcbdeea7a18fc672003c1b136f2528a2d76
 parser.add_argument('--original', type=str,
                     help='Path of original image to compute the RMS error within images folder')
 args = parser.parse_args()
