@@ -1,5 +1,8 @@
 {
-    "python.pythonPath": "/home/vaibhav/anaconda2/envs/tensorflow/bin/python",
+    "python.pythonPath": "/home/vaibhav/miniconda3/envs/fuzzy/bin/python",
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=120"
+    ]    
 }

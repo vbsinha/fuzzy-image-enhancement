@@ -1,3 +1,4 @@
+import imageio
 import numpy as np
 from scipy.signal import medfilt2d
 
@@ -9,7 +10,37 @@ import os
 alpha = 100
 
 
-def newfA(img, i, j, k, mu, betaij):
+# def filterA(img, k, mu, beta):
+#     """ Apply filter A on img given pre-computed mu and beta """
+#     l = len(img)
+#     m = np.arange(k) - k//2
+#     n = np.arange(k) - k//2
+#     result = np.zeros((l, l))
+
+#     for i in range(len(img)):
+#         for j in range(len(img)):
+#             d2 = []
+#             _mu = []
+#             w = []
+#             I = []
+#             for p in m:
+#                 for q in n:
+#                     if 0 <= i+p < l and 0 <= j+q < l:
+#                         d2.append((img[i+p][j+q] - img[i][j])**2)
+#                         _mu.append(mu[i][j][p][q])
+#                         I.append(img[i+p][j+q])
+#             minusd2bybetaij = d2 / (-1 * beta[i][j])
+
+#             weights = _mu * (1+minusd2bybetaij)
+#             num, den = 0, 0
+#             for i in range(len(weights)):
+#                 num += weights[i] * I[i]
+#                 den += weights[i]
+#             result[i][j] = num / den
+#     return result
+
+
+def _filterA(img, i, j, k, mu, betaij):
     l = len(img)
     m = np.arange(k) - k//2
     n = np.arange(k) - k//2
@@ -34,18 +65,17 @@ def newfA(img, i, j, k, mu, betaij):
     return num / den
 
 
-def newfilterA(img, k, mu, beta):
+def filterA(img, k, mu, beta):
     l = len(img)
     result = np.zeros((l, l))
     for i in range(len(img)):
-        # if i % 32 == 0:
-        #     print(i)
         for j in range(len(img)):
-            result[i][j] = newfA(img, i, j, k, mu, beta[i][j])
+            result[i][j] = _filterA(img, i, j, k, mu, beta[i][j])
     return result
 
 
-def newfilterB(img, k, beta):
+def filterB(img, k, beta):
+    """ Apply filter B on img given pre-computed mu and beta """
     l = len(img)
     m = np.arange(k) - k//2
     n = np.arange(k) - k//2
@@ -70,7 +100,8 @@ def newfilterB(img, k, beta):
     return result
 
 
-def newfilterC(img, k, mu, beta):
+def filterC(img, k, mu, beta):
+    """ Apply filter C on img given pre-computed mu and beta """
     l = len(img)
     m = np.arange(k) - k//2
     n = np.arange(k) - k//2
@@ -93,6 +124,7 @@ def newfilterC(img, k, mu, beta):
 
 
 def compute_mu_beta_w(img, k):
+    """ Computes mu beta and w. This is a useful pre-computation  """
     l = len(img)
     mu = np.zeros((l, l, k, k))
     w = np.zeros((l, l, k, k))
@@ -118,6 +150,7 @@ def compute_mu_beta_w(img, k):
 
 
 def TC(l, k, mu, w):
+    """ Computes total compatibility """
 
     m = np.arange(k) - k//2
     n = np.arange(k) - k//2
@@ -140,12 +173,13 @@ def TC(l, k, mu, w):
 
 
 def filterR1(img, k, tc, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R1 on img given pre-computed tc and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_B is None:
-        img_B = newfilterB(img, k, beta)
-    
+        img_B = filterB(img, k, beta)
+
     for i in range(l):
         for j in range(l):
             c1 = small(tc[i][j])
@@ -156,12 +190,15 @@ def filterR1(img, k, tc, beta, img_A=None, img_B=None, img_C=None):
 
 
 def filterR2(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R2 on img given pre-computed tc, mu and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_B is None:
-        img_B = newfilterB(img, k, beta)
-        img_C = newfilterC(img, k, mu, beta)
+        img_B = filterB(img, k, beta)
+
+    if img_C is None:
+        img_C = filterC(img, k, mu, beta)
 
     for i in range(l):
         for j in range(l):
@@ -173,13 +210,18 @@ def filterR2(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
 
 
 def filterR3(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R3 on img given pre-computed tc, mu and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_A is None:
-        img_A = newfilterA(img, k, mu, beta)
-        img_B = newfilterB(img, k, beta)
-        img_C = newfilterC(img, k, mu, beta)
+        img_A = filterA(img, k, mu, beta)
+
+    if img_B is None:
+        img_B = filterB(img, k, beta)
+
+    if img_C is None:
+        img_C = filterC(img, k, mu, beta)
 
     for i in range(l):
         for j in range(l):
@@ -193,13 +235,18 @@ def filterR3(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
 
 
 def filterR3Crisp(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R3-Crsip on img given pre-computed tc, mu and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_A is None:
-        img_A = newfilterA(img, k, mu, beta)
-        img_B = newfilterB(img, k, beta)
-        img_C = newfilterC(img, k, mu, beta)
+        img_A = filterA(img, k, mu, beta)
+
+    if img_B is None:
+        img_B = filterB(img, k, beta)
+
+    if img_C is None:
+        img_C = filterC(img, k, mu, beta)
 
     for i in range(l):
         for j in range(l):
@@ -217,13 +264,18 @@ def filterR3Crisp(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
 
 
 def filterR4(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R4 on img given pre-computed tc, mu and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_A is None:
-        img_A = newfilterA(img, k, mu, beta)
-        img_B = newfilterB(img, k, beta)
-        img_C = newfilterC(img, k, mu, beta)
+        img_A = filterA(img, k, mu, beta)
+
+    if img_B is None:
+        img_B = filterB(img, k, beta)
+
+    if img_C is None:
+        img_C = filterC(img, k, mu, beta)
 
     for i in range(l):
         for j in range(l):
@@ -237,13 +289,18 @@ def filterR4(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
 
 
 def filterR4Crisp(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
+    """ Apply filter R4-Crsip on img given pre-computed tc, mu and beta """
     l = len(img)
     result = np.zeros((l, l))
 
     if img_A is None:
-        img_A = newfilterA(img, k, mu, beta)
-        img_B = newfilterB(img, k, beta)
-        img_C = newfilterC(img, k, mu, beta)
+        img_A = filterA(img, k, mu, beta)
+
+    if img_B is None:
+        img_B = filterB(img, k, beta)
+
+    if img_C is None:
+        img_C = filterC(img, k, mu, beta)
 
     for i in range(l):
         for j in range(l):
@@ -260,74 +317,80 @@ def filterR4Crisp(img, k, tc, mu, beta, img_A=None, img_B=None, img_C=None):
     return result
 
 
-def allfilters(img, k, tc, mu, beta, imagepath, orig_img):
-    img_A = newfilterA(img, k, mu, beta)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_A.png')
+def allfilters(img, k, tc, mu, beta, imagename, original):
+    """ This function applies all the filters and saves the output images and logs the RMSE.
+    Filters applied: A, B, C, R1, R2, R3, R4, R3-Crisp, R4-Crisp and Median """
+    inp_img = img.copy()
+
+    img_A = filterA(img, k, mu, beta)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_A.png')
     img_A = saveimg(op_imagepath, img_A)
 
-    img_B = newfilterB(img, k, beta)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_B.png')
+    img_B = filterB(img, k, beta)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_B.png')
     img_B = saveimg(op_imagepath, img_B)
 
-    img_C = newfilterC(img, k, mu, beta)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_C.png')
+    img_C = filterC(img, k, mu, beta)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_C.png')
     img_C = saveimg(op_imagepath, img_C)
 
     img_Med = medfilt2d(img, k)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_Med.png')
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_Med.png')
     img_Med = saveimg(op_imagepath, img_Med)
 
     img_R1 = filterR1(img, k, tc, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R1.png')
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R1.png')
     img_R1 = saveimg(op_imagepath, img_R1)
-    
-    img_R2 = filterR2(img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R2.png')
+
+    img_R2 = filterR2(img, k, tc, mu, beta, img_A=img_A,
+                      img_B=img_B, img_C=img_C)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R2.png')
     img_R2 = saveimg(op_imagepath, img_R2)
 
-    img_R3 = filterR3(img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R3.png')
+    img_R3 = filterR3(img, k, tc, mu, beta, img_A=img_A,
+                      img_B=img_B, img_C=img_C)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R3.png')
     img_R3 = saveimg(op_imagepath, img_R3)
 
-    img_R3Crisp = filterR3Crisp(img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R3Crisp.png')
+    img_R3Crisp = filterR3Crisp(
+        img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R3Crisp.png')
     img_R3Crisp = saveimg(op_imagepath, img_R3Crisp)
 
-    img_R4 = filterR4(img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R4.png')
+    img_R4 = filterR4(img, k, tc, mu, beta, img_A=img_A,
+                      img_B=img_B, img_C=img_C)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R4.png')
     img_R4 = saveimg(op_imagepath, img_R4)
 
-    img_R4Crisp = filterR4(img, k, tc, mu, beta, img_A=img_A, img_B=img_B, img_C=img_C)
-    op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-                            :-4]+'_R4Crisp.png')
+    img_R4Crisp = filterR4(img, k, tc, mu, beta,
+                           img_A=img_A, img_B=img_B, img_C=img_C)
+    op_imagepath = os.path.join('images', 'enhanced', imagename+'_R4Crisp.png')
     img_R4Crisp = saveimg(op_imagepath, img_R4Crisp)
 
-    err = rmse(img_A, orig_img)
-    print('RMSE of filterA (against original image):{}'.format(err))
-    err = rmse(img_B, orig_img)
-    print('RMSE of filterB (against original image):{}'.format(err))
-    err = rmse(img_C, orig_img)
-    print('RMSE of filterC (against original image):{}'.format(err))
-    err = rmse(img_Med, orig_img)
-    print('RMSE of filterMed (against original image):{}'.format(err))
-    err = rmse(img_R1, orig_img)
-    print('RMSE of filterR1 (against original image):{}'.format(err))
-    err = rmse(img_R2, orig_img)
-    print('RMSE of filterR2 (against original image):{}'.format(err))
-    err = rmse(img_R3, orig_img)
-    print('RMSE of filterR3 (against original image):{}'.format(err))
-    err = rmse(img_R3Crisp, orig_img)
-    print('RMSE of filterR3Crisp (against original image):{}'.format(err))
-    err = rmse(img_R4, orig_img)
-    print('RMSE of filterR4 (against original image):{}'.format(err))
-    err = rmse(img_R4Crisp, orig_img)
-    print('RMSE of filterR3Crisp (against original image):{}'.format(err))
+    if original is not None:
+        orig_imagepath = os.path.join('images', original)
+        orig_img = imageio.imread(orig_imagepath)
+
+        err = rmse(img_A, orig_img)
+        print('RMSE of filterA (against original image):{}'.format(err))
+        err = rmse(img_B, orig_img)
+        print('RMSE of filterB (against original image):{}'.format(err))
+        err = rmse(img_C, orig_img)
+        print('RMSE of filterC (against original image):{}'.format(err))
+        err = rmse(img_Med, orig_img)
+        print('RMSE of filterMed (against original image):{}'.format(err))
+        err = rmse(img_R1, orig_img)
+        print('RMSE of filterR1 (against original image):{}'.format(err))
+        err = rmse(img_R2, orig_img)
+        print('RMSE of filterR2 (against original image):{}'.format(err))
+        err = rmse(img_R3, orig_img)
+        print('RMSE of filterR3 (against original image):{}'.format(err))
+        err = rmse(img_R3Crisp, orig_img)
+        print('RMSE of filterR3Crisp (against original image):{}'.format(err))
+        err = rmse(img_R4, orig_img)
+        print('RMSE of filterR4 (against original image):{}'.format(err))
+        err = rmse(img_R4Crisp, orig_img)
+        print('RMSE of filterR3Crisp (against original image):{}'.format(err))
+
+        noisy_err = rmse(orig_img, inp_img)
+        print('RMSE of input image (against original image):{}'.format(noisy_err))
