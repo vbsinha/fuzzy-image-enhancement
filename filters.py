@@ -10,39 +10,6 @@ import os
 alpha = 100
 
 
-<<<<<<< HEAD
-=======
-# def filterA(img, k, mu, beta):
-#     """ Apply filter A on img given pre-computed mu and beta """
-#     l = len(img)
-#     m = np.arange(k) - k//2
-#     n = np.arange(k) - k//2
-#     result = np.zeros((l, l))
-
-#     for i in range(len(img)):
-#         for j in range(len(img)):
-#             d2 = []
-#             _mu = []
-#             w = []
-#             I = []
-#             for p in m:
-#                 for q in n:
-#                     if 0 <= i+p < l and 0 <= j+q < l:
-#                         d2.append((img[i+p][j+q] - img[i][j])**2)
-#                         _mu.append(mu[i][j][p][q])
-#                         I.append(img[i+p][j+q])
-#             minusd2bybetaij = d2 / (-1 * beta[i][j])
-
-#             weights = _mu * (1+minusd2bybetaij)
-#             num, den = 0, 0
-#             for i in range(len(weights)):
-#                 num += weights[i] * I[i]
-#                 den += weights[i]
-#             result[i][j] = num / den
-#     return result
-
-
->>>>>>> 335c1dcbdeea7a18fc672003c1b136f2528a2d76
 def _filterA(img, i, j, k, mu, betaij):
     l = len(img)
     m = np.arange(k) - k//2

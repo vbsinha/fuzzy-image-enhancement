@@ -28,11 +28,7 @@ parser.add_argument('--image', type=str, required=True,
 parser.add_argument('--method', type=str,
                     choices=['A', 'B', 'C', 'Med', 'R1', 'R2', 'R3',
                              'R3Crisp', 'R4', 'R4Crisp', 'All', 'Plot'],
-<<<<<<< HEAD
                     required=True, help='Choose the method to enhance')
-=======
-                    default='Fuzzy', help='Choose the method to enhance')
->>>>>>> 335c1dcbdeea7a18fc672003c1b136f2528a2d76
 parser.add_argument('--original', type=str,
                     help='Path of original image to compute the RMS error within images folder')
 parser.add_argument('-k', type=int, default=5, help='Filter size, default: 5')
