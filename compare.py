@@ -45,14 +45,6 @@ if args.method == 'Gauss':
     err = rmse(gauss_denoised, orig_img)
     print('RMSE of filterGauss (against original image):{}'.format(err))
 
-# # LoG
-# log = ndimage.gaussian_laplace(img, 3)
-# op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[
-#                             :-4]+'_log.png')
-# log = saveimg(op_imagepath, log)
-# err = rmse(log, orig_img)
-# print('RMSE of filterLoG (against original image):{}'.format(err))
-
 if args.method == 'TVC':
     tvc = denoise_tv_chambolle(img, weight=30, multichannel=False)
     op_imagepath = os.path.join('images', 'enhanced', os.path.basename(imagepath)[

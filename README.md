@@ -26,22 +26,22 @@ mkdir images/noisy images/enhanced images/tc
 ```
 Within the images directory, the directory original stores original greyscale images, noisy directory stores the noise added images, and enhanced stores the enhanced images obatined by applying filters.
 
-To add noise to images (note that the image must be stored in `images/original` directory. Only pass the imagename as IMAGENAME not the path):
+To add noise to images (note that the image must be stored in `images/original` directory. Only pass the imagename as IMGNAME not the path):
 ```bash
-python noise.py --image IMAGENAME
+python noise.py --image IMGNAME
 ```
 Change the parameters of noise from within `noise.py` if needed.
 
 To run the filters:
 ```bash
-python main.py --image NOISYIMAGEPATH --method METHOD [--original ORIGINALIMAGEPATH]
+python main.py --image NOISYIMGPATH --method METHOD [--original ORIGINALIMGPATH]
 ```
-NOISYIMAGEPATH is relative to `images/` typically something like `noisy/Cameraman_5_5_100.png`, similarly for ORIGINALIMAGEPATH (eg. `original/Cameraman.png`). When original is specified the RMSE is reported.
+NOISYIMGPATH is relative to `images/` typically something like `noisy/Cameraman_5_5_100.png`, similarly for ORIGINALIMGPATH (eg. `original/Cameraman.png`). When original is specified the RMSE is reported.
 Possible options for METHOD are 'A', 'B', 'C', 'Med', 'R1', 'R2', 'R3', 'R3Crisp', 'R4', 'R4Crisp', 'All' and 'Plot'. 'All' applies all the filters. 'Plot' plots the weights of filter A, B and C and saves to `images/tc`. 'Med' applies the median filter.
 
 To run the other out-of-box filters:
 ```bash
-python compare.py --image NOISYIMAGEPATH --method METHOD [--original ORIGINALIMAGEPATH]
+python compare.py --image NOISYIMGPATH --method METHOD [--original ORIGINALIMGPATH]
 ```
 Possible options for METHOD are 'Sharpen', 'Gauss', 'TVC' (TV Chambolle), 'TVB' (TV Bregman) and 'Bil' (Biltaeral). Other arguments are same as for `main.py`.
 
